@@ -22,10 +22,27 @@ jobs:
           pip install -r requirements.txt
 
       - name: Unit tests
-        run: PYTHONPATH=. pytest -q tests/test_sim.py
+        run: PYTHONPATH=. pytest -q tests/test_sim.py tests/test_config.py
 
       - name: Validation gate
         run: PYTHONPATH=. python scripts/validate.py --config configs/nominal.yaml --fail-fast
+
+      - name: Build C++ simulator
+        run: |
+          g++ -std=c++17 -Icpp/include cpp/src/rocket_sim_cpp.cpp cpp/src/sim_main.cpp -o cpp_sim
+
+      - name: C++ validation gate
+        run: |
+          g++ -std=c++17 -Icpp/include cpp/src/rocket_sim_cpp.cpp cpp/src/validate_main.cpp -o cpp_validate
+          ./cpp_validate
+
+      - name: C++ unit tests
+        run: |
+          g++ -std=c++17 -Icpp/include cpp/src/rocket_sim_cpp.cpp cpp/src/tests_main.cpp -o cpp_tests
+          ./cpp_tests
+
+      - name: Python/C++ parity check
+        run: PYTHONPATH=. python scripts/parity_check.py --config configs/nominal.yaml
 
       - name: Monte Carlo smoke
         run: PYTHONPATH=. python scripts/monte_carlo.py --config configs/nominal.yaml --runs 50 --seed 123 --outdir outputs/ci_monte_carlo

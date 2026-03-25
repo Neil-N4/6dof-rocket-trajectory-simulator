@@ -7,3 +7,4 @@ outputs/
 build/
 cpp_sim
 cpp_validate
+cpp_tests

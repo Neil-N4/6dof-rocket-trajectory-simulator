@@ -108,6 +108,10 @@ MPLCONFIGDIR=$PWD/.mplconfig PYTHONPATH=. python main.py --config configs/high_w
 make test
 make validate
 make run
+make cpp-run
+make cpp-validate
+make cpp-test
+make parity
 make montecarlo
 ```
 
@@ -138,6 +142,15 @@ make cpp-validate
 
 `cpp_validate` executes threshold checks and event/phase ordering directly in C++.
 
+## Python/C++ Parity Check
+
+```bash
+cd /path/to/6dof-rocket-trajectory-simulator
+make parity
+```
+
+This compares Python and native C++ outputs on the same scenario and enforces metric tolerances for apogee, Max-Q, and key event times.
+
 ## Validation Methodology
 
 Validation components:
@@ -146,6 +159,7 @@ Validation components:
 - Numerical cross-check: SciPy `solve_ivp` against RK4 implementation
 - Automated tests: atmosphere behavior, staging transitions, state-machine behavior, and error-threshold checks
 - CI gate: `.github/workflows/ci.yml` runs tests, validation, and Monte Carlo smoke checks on every push/PR
+- CI gate also runs native C++ validation, C++ unit tests, and Python/C++ parity checks
 
 Reference run (`python main.py --dt 0.1 --duration 2200`):
 
@@ -174,8 +188,10 @@ Monte Carlo dispersion (`python scripts/monte_carlo.py --runs 80 --seed 123 --du
 - `cpp/src/rocket_sim_cpp.cpp`: native C++ RK4 dynamics/staging implementation
 - `cpp/src/sim_main.cpp`: C++ CLI simulator entrypoint
 - `cpp/src/validate_main.cpp`: native C++ validation gate executable
+- `cpp/src/tests_main.cpp`: native C++ unit-style regression executable
 - `scripts/validate.py`: threshold gate for regression prevention
 - `scripts/monte_carlo.py`: uncertainty dispersion runner
+- `scripts/parity_check.py`: Python↔C++ metric parity checker
 - `configs/*.yaml`: scenario configuration files
 - `tests/test_sim.py`: regression and validation tests
 
