@@ -19,7 +19,7 @@ A resume-grade rocket flight simulator with rigid-body 6-DOF dynamics, RK4 integ
 Translational dynamics:
 
 - $\dot{\mathbf{r}} = \mathbf{v}$
-- $\dot{\mathbf{v}} = \mathbf{g}(\mathbf{r}) + \frac{\mathbf{F}_{thrust} + \mathbf{F}_{drag}}{m}$
+- $\dot{\mathbf{v}} = \mathbf{g}(\mathbf{r}) + \frac{\mathbf{F}_{\text{thrust}} + \mathbf{F}_{\text{drag}}}{m}$
 - $\mathbf{g}(\mathbf{r}) = -\mu \frac{\mathbf{r}}{\|\mathbf{r}\|^3}$
 
 Drag model:
