@@ -17,6 +17,7 @@ C++, Python, NumPy, SciPy, Matplotlib
   - `IGNITION -> ASCENT -> STAGING -> COAST -> APOGEE -> REENTRY -> LANDING`
 - Autonomous detection of `MECO`, `staging`, `apogee`, `reentry`, and `landing`
 - Analytical baseline checks + SciPy cross-check pipeline
+- Native C++ simulation core (`cpp/include/rocket_sim_cpp.hpp`, `cpp/src/rocket_sim_cpp.cpp`) with RK4, staging, atmosphere, and CSV output
 
 ## Demo Artifacts
 
@@ -119,6 +120,15 @@ cmake --build build
 ./build/rk4_reference
 ```
 
+## C++ Simulation Core Run
+
+```bash
+cd /path/to/6dof-rocket-trajectory-simulator
+make cpp-run
+```
+
+This produces `outputs/cpp_flight_states.csv` from the native C++ simulator executable (`cpp_sim`).
+
 ## Validation Methodology
 
 Validation components:
@@ -151,6 +161,9 @@ Monte Carlo dispersion (`python scripts/monte_carlo.py --runs 80 --seed 123 --du
 - `rocket_sim/validation.py`: analytical/SciPy validation helpers
 - `rocket_sim/plotting.py`: plot and CSV generation
 - `cpp/rk4_reference.cpp`: optional C++ RK4 reference executable
+- `cpp/include/rocket_sim_cpp.hpp`: C++ core data model + public simulation API
+- `cpp/src/rocket_sim_cpp.cpp`: native C++ RK4 dynamics/staging implementation
+- `cpp/src/sim_main.cpp`: C++ CLI simulator entrypoint
 - `scripts/validate.py`: threshold gate for regression prevention
 - `scripts/monte_carlo.py`: uncertainty dispersion runner
 - `configs/*.yaml`: scenario configuration files
