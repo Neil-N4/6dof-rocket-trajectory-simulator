@@ -8,3 +8,4 @@ build/
 cpp_sim
 cpp_validate
 cpp_tests
+cpp_monte_carlo

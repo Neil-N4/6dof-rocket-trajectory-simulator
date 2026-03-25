@@ -9,6 +9,7 @@ int main(int argc, char** argv) {
   rocketsim::Config cfg = rocketsim::default_config();
   std::string out_csv = "outputs/cpp_flight_states.csv";
   std::string summary_out = "outputs/cpp_summary.txt";
+  std::string config_path;
 
   for (int i = 1; i < argc; ++i) {
     const std::string a = argv[i];
@@ -20,6 +21,16 @@ int main(int argc, char** argv) {
       out_csv = argv[++i];
     } else if (a == "--summary" && i + 1 < argc) {
       summary_out = argv[++i];
+    } else if (a == "--config" && i + 1 < argc) {
+      config_path = argv[++i];
+    }
+  }
+
+  if (!config_path.empty()) {
+    std::string err;
+    if (!rocketsim::load_config_yaml(config_path, cfg, err)) {
+      std::cerr << "[C++] Failed to load config: " << err << "\n";
+      return 1;
     }
   }
 

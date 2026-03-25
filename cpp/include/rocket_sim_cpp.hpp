@@ -73,6 +73,7 @@ struct Result {
 };
 
 Config default_config();
+bool load_config_yaml(const std::string& path, Config& cfg, std::string& err);
 Result run_simulation(const Config& cfg);
 void write_csv(const Result& result, const std::string& out_path);
 

@@ -33,6 +33,10 @@ C++, Python, NumPy, SciPy, Matplotlib
 
 ![Dispersion histograms](docs/images/dispersion_histograms.png)
 
+**Python vs C++ Runtime Benchmark**
+
+![Runtime comparison](docs/images/runtime_comparison.png)
+
 ## Architecture
 
 ```mermaid
@@ -95,6 +99,9 @@ Run deterministic scenarios without code changes:
 - `configs/high_wind.yaml`
 - `configs/thrust_loss.yaml`
 - `configs/heavy_payload.yaml`
+- `configs/engine_cutoff.yaml`
+- `configs/separation_anomaly.yaml`
+- `configs/extreme_drag.yaml`
 
 Example:
 
@@ -113,6 +120,9 @@ make cpp-validate
 make cpp-test
 make parity
 make montecarlo
+make cpp-montecarlo
+make benchmark
+make failure-suite
 ```
 
 ## Optional C++ Baseline Build
@@ -150,6 +160,34 @@ make parity
 ```
 
 This compares Python and native C++ outputs on the same scenario and enforces metric tolerances for apogee, Max-Q, and key event times.
+
+## Performance Benchmark
+
+```bash
+cd /path/to/6dof-rocket-trajectory-simulator
+make benchmark
+```
+
+Generates:
+
+- `outputs/benchmarks/benchmark_summary.json`
+- `outputs/benchmarks/runtime_comparison.png`
+- `docs/PERFORMANCE_REPORT.md`
+
+Latest benchmark (`runs=5`, `duration=1200s`, `dt=0.15s`) reports approximately **16.06x** C++ speedup over Python on this machine.
+
+## Failure-Mode Suite
+
+```bash
+cd /path/to/6dof-rocket-trajectory-simulator
+make failure-suite
+```
+
+Checks non-ideal scenarios (`engine_cutoff`, `separation_anomaly`, `extreme_drag`) and verifies expected behavior.
+
+## Debugging Case Study
+
+- `docs/DEBUGGING_CASE_STUDY.md` documents a real Python/C++ event-time drift issue, root cause analysis, fix, and post-fix verification.
 
 ## Validation Methodology
 
@@ -189,9 +227,14 @@ Monte Carlo dispersion (`python scripts/monte_carlo.py --runs 80 --seed 123 --du
 - `cpp/src/sim_main.cpp`: C++ CLI simulator entrypoint
 - `cpp/src/validate_main.cpp`: native C++ validation gate executable
 - `cpp/src/tests_main.cpp`: native C++ unit-style regression executable
+- `cpp/src/monte_carlo_main.cpp`: native C++ Monte Carlo dispersion executable
 - `scripts/validate.py`: threshold gate for regression prevention
 - `scripts/monte_carlo.py`: uncertainty dispersion runner
 - `scripts/parity_check.py`: Python↔C++ metric parity checker
+- `scripts/benchmark.py`: Python vs C++ runtime benchmark + report generator
+- `scripts/failure_modes.py`: automated failure-mode behavior checks
+- `docs/PERFORMANCE_REPORT.md`: benchmark results and speedup summary
+- `docs/DEBUGGING_CASE_STUDY.md`: deep-dive debugging narrative
 - `configs/*.yaml`: scenario configuration files
 - `tests/test_sim.py`: regression and validation tests
 

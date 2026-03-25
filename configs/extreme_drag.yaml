@@ -1,0 +1,22 @@
+payload_mass_kg: 15600
+dt_s: 0.1
+sim_duration_s: 2200
+staging_delay_s: 2.0
+wind_i_m_s: [0.0, 25.0, 0.0]
+stages:
+  - name: Stage 1
+    dry_mass_kg: 22000
+    propellant_mass_kg: 395000
+    max_thrust_n: 7600000
+    isp_s: 282
+    burn_time_s: 162
+    reference_area_m2: 13.0
+    cd: 0.55
+  - name: Stage 2
+    dry_mass_kg: 4000
+    propellant_mass_kg: 92000
+    max_thrust_n: 981000
+    isp_s: 348
+    burn_time_s: 340
+    reference_area_m2: 4.0
+    cd: 0.30

@@ -47,7 +47,8 @@ def default_config(project_root: Path) -> RocketConfig:
 
 
 def _to_stage(entry: dict[str, Any]) -> Stage:
-    inertia = np.array(entry["inertia_kg_m2"], dtype=float)
+    inertia_raw = entry.get("inertia_kg_m2", [1.0e6, 1.0e6, 1.0e5])
+    inertia = np.array(inertia_raw, dtype=float)
     if inertia.shape == (3,):
         inertia = np.diag(inertia)
     lever = np.array(entry.get("lever_arm_m", [0.0, 0.0, -1.0]), dtype=float)

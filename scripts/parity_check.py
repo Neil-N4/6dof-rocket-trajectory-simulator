@@ -40,6 +40,8 @@ def main() -> None:
     subprocess.run(
         [
             str((root / args.cpp_bin).resolve()),
+            "--config",
+            str((root / args.config).resolve()),
             "--dt",
             str(cfg.dt_s),
             "--duration",

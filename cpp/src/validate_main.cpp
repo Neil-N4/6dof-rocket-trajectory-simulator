@@ -18,8 +18,22 @@ bool check(bool condition, const std::string& msg, std::vector<std::string>& fai
 
 }  // namespace
 
-int main() {
+int main(int argc, char** argv) {
   rocketsim::Config cfg = rocketsim::default_config();
+  std::string config_path;
+  for (int i = 1; i < argc; ++i) {
+    const std::string a = argv[i];
+    if (a == "--config" && i + 1 < argc) {
+      config_path = argv[++i];
+    }
+  }
+  if (!config_path.empty()) {
+    std::string err;
+    if (!rocketsim::load_config_yaml(config_path, cfg, err)) {
+      std::cerr << "Failed to load config: " << err << "\n";
+      return 1;
+    }
+  }
   const rocketsim::Result result = rocketsim::run_simulation(cfg);
 
   std::vector<std::string> failures;
