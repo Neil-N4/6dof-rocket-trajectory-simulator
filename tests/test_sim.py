@@ -5,8 +5,9 @@ from pathlib import Path
 import numpy as np
 
 from rocket_sim.atmosphere import air_density_kg_m3
-from rocket_sim.models import RocketConfig, Stage
+from rocket_sim.models import FlightPhase, RocketConfig, Stage
 from rocket_sim.simulate import run_simulation
+from rocket_sim.validation import baseline_trajectory_error_percent
 
 
 def test_atmosphere_density_decreases_with_altitude() -> None:
@@ -73,3 +74,29 @@ def test_staging_changes_stage_index() -> None:
     result = run_simulation(cfg)
 
     assert result.stage_index.max() >= 1
+
+
+def test_state_machine_reaches_expected_phases() -> None:
+    stage = Stage(
+        name="State Machine Stage",
+        dry_mass_kg=700.0,
+        propellant_mass_kg=2_500.0,
+        max_thrust_n=180_000.0,
+        isp_s=255.0,
+        burn_time_s=45.0,
+        reference_area_m2=1.2,
+        cd=0.32,
+        inertia_kg_m2=np.diag([4_000.0, 4_000.0, 2_000.0]),
+    )
+    cfg = RocketConfig(stages=[stage], payload_mass_kg=150.0, dt_s=0.1, sim_duration_s=220.0)
+    result = run_simulation(cfg)
+    phases = set(result.flight_phase.tolist())
+    assert int(FlightPhase.IGNITION) in phases
+    assert int(FlightPhase.ASCENT) in phases
+    assert int(FlightPhase.COAST) in phases or int(FlightPhase.STAGING) in phases
+
+
+def test_rk4_analytical_baseline_error_below_half_percent() -> None:
+    analytical_error_pct, scipy_error_pct = baseline_trajectory_error_percent()
+    assert analytical_error_pct < 0.5
+    assert scipy_error_pct < 0.5

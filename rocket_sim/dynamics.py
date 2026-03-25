@@ -15,6 +15,10 @@ class StageRuntime:
     stage_index: int
     stage_elapsed_s: float
     stage_propellant_kg: float
+    gimbal_pitch_rad: float = 0.0
+    gimbal_yaw_rad: float = 0.0
+    target_pitch_rad: float = 0.0
+    target_yaw_rad: float = 0.0
 
 
 def rotation_matrix_from_euler(roll: float, pitch: float, yaw: float) -> np.ndarray:
@@ -99,21 +103,30 @@ def derivatives(
         cd = stage.cd
         inertia = stage.inertia_kg_m2
 
-        # Simple gravity-turn style pitch program from local vertical.
-        pitch_cmd_rad = math.radians(min(max(runtime.stage_elapsed_s - 8.0, 0.0) * 0.6, 30.0))
-        radial_hat = pos / (radius if radius > 1.0 else 1.0)
+        gimbal_pitch = float(np.clip(runtime.gimbal_pitch_rad, -math.radians(stage.max_gimbal_deg), math.radians(stage.max_gimbal_deg)))
+        gimbal_yaw = float(np.clip(runtime.gimbal_yaw_rad, -math.radians(stage.max_gimbal_deg), math.radians(stage.max_gimbal_deg)))
+        pitch_cmd = runtime.target_pitch_rad + gimbal_pitch
+        yaw_cmd = runtime.target_yaw_rad + gimbal_yaw
+
+        radial_hat = pos / max(radius, 1.0)
         ref = np.array([0.0, 0.0, 1.0])
         east_hat = np.cross(ref, radial_hat)
         if np.linalg.norm(east_hat) < 1e-6:
             east_hat = np.array([0.0, 1.0, 0.0])
         east_hat = east_hat / np.linalg.norm(east_hat)
+        north_hat = np.cross(radial_hat, east_hat)
 
-        thrust_dir_i = math.cos(pitch_cmd_rad) * radial_hat + math.sin(pitch_cmd_rad) * east_hat
+        thrust_dir_i = (
+            math.cos(pitch_cmd) * math.cos(yaw_cmd) * radial_hat
+            + math.sin(yaw_cmd) * north_hat
+            + math.sin(pitch_cmd) * math.cos(yaw_cmd) * east_hat
+        )
         thrust_i = thrust_n * thrust_dir_i
 
         rot = rotation_matrix_from_euler(eul[0], eul[1], eul[2])
         thrust_b = rot.T @ thrust_i
-        torque_b = np.cross(stage.lever_arm_m, thrust_b)
+        arm = abs(stage.lever_arm_m[2]) if len(stage.lever_arm_m) >= 3 else 1.0
+        torque_b = np.array([0.0, thrust_n * arm * gimbal_pitch, thrust_n * arm * gimbal_yaw])
     else:
         thrust_i = np.zeros(3)
 
@@ -128,8 +141,15 @@ def derivatives(
     # Rigid body rotational dynamics (body frame).
     omega = body_rates
     coriolis = np.cross(omega, inertia @ omega)
-    # Light rotational damping keeps attitude numerically stable in long runs.
-    omega_dot = np.linalg.solve(inertia, torque_b - coriolis) - 0.25 * omega
+    omega_dot = np.linalg.solve(inertia, torque_b - coriolis) - 0.35 * omega
+    if runtime is not None:
+        omega_dot += np.array(
+            [
+                -2.0 * eul[0] - 1.5 * omega[0],
+                18.0 * (runtime.target_pitch_rad - eul[1]) - 5.0 * omega[1],
+                18.0 * (runtime.target_yaw_rad - eul[2]) - 5.0 * omega[2],
+            ]
+        )
 
     euler_dot = euler_rates_matrix(eul[0], eul[1]) @ omega
 

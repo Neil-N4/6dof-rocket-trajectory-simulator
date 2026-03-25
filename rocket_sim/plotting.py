@@ -64,11 +64,14 @@ def save_csv(result: SimResult, out_path: Path) -> None:
             result.speed_m_s,
             result.dynamic_pressure_pa,
             result.stage_index,
+            result.flight_phase,
+            result.gimbal_pitch_deg,
+            result.gimbal_yaw_deg,
             result.states,
         ]
     )
     header = (
-        "time_s,altitude_m,speed_m_s,dynamic_pressure_pa,stage_index,"
+        "time_s,altitude_m,speed_m_s,dynamic_pressure_pa,stage_index,flight_phase,gimbal_pitch_deg,gimbal_yaw_deg,"
         "x_m,y_m,z_m,vx_m_s,vy_m_s,vz_m_s,roll_rad,pitch_rad,yaw_rad,p_rad_s,q_rad_s,r_rad_s,mass_kg"
     )
     np.savetxt(out_path, arr, delimiter=",", header=header, comments="")

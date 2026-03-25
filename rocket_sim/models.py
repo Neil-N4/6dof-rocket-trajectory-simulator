@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from enum import IntEnum
 from pathlib import Path
 
 import numpy as np
@@ -18,6 +19,7 @@ class Stage:
     cd: float
     inertia_kg_m2: np.ndarray
     lever_arm_m: np.ndarray = field(default_factory=lambda: np.array([0.0, 0.0, -1.0]))
+    max_gimbal_deg: float = 6.0
 
 
 @dataclass(frozen=True)
@@ -32,6 +34,20 @@ class RocketConfig:
     thrust_curve_csv: Path | None = None
     dt_s: float = 0.05
     sim_duration_s: float = 240.0
+    staging_delay_s: float = 2.0
+    pid_kp: float = 10.0
+    pid_ki: float = 0.2
+    pid_kd: float = 3.5
+
+
+class FlightPhase(IntEnum):
+    IGNITION = 0
+    ASCENT = 1
+    STAGING = 2
+    COAST = 3
+    APOGEE = 4
+    REENTRY = 5
+    LANDING = 6
 
 
 @dataclass
