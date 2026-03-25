@@ -1,0 +1,6 @@
+.venv/
+.mplconfig/
+__pycache__/
+.pytest_cache/
+*.pyc
+outputs/
