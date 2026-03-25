@@ -5,6 +5,16 @@
 
 namespace rocketsim {
 
+enum class FlightPhase {
+  IGNITION = 0,
+  ASCENT = 1,
+  STAGING = 2,
+  COAST = 3,
+  APOGEE = 4,
+  REENTRY = 5,
+  LANDING = 6,
+};
+
 struct Vec3 {
   double x;
   double y;
@@ -48,10 +58,18 @@ struct Result {
   std::vector<double> altitude_m;
   std::vector<double> dynamic_pressure_pa;
   std::vector<int> stage_index;
+  std::vector<int> phase_index;
   double apogee_m = 0.0;
   double apogee_time_s = 0.0;
   double max_q_pa = 0.0;
   double max_q_time_s = 0.0;
+  double max_q_ascent_80km_pa = 0.0;
+  double max_q_ascent_80km_time_s = 0.0;
+  double meco_time_s = -1.0;
+  double staging_time_s = -1.0;
+  double apogee_event_time_s = -1.0;
+  double reentry_time_s = -1.0;
+  double landing_time_s = -1.0;
 };
 
 Config default_config();

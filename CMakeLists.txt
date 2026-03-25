@@ -12,4 +12,7 @@ target_include_directories(rocket_sim_cpp_lib PUBLIC cpp/include)
 add_executable(cpp_sim cpp/src/sim_main.cpp)
 target_link_libraries(cpp_sim PRIVATE rocket_sim_cpp_lib)
 
+add_executable(cpp_validate cpp/src/validate_main.cpp)
+target_link_libraries(cpp_validate PRIVATE rocket_sim_cpp_lib)
+
 add_executable(rk4_reference cpp/rk4_reference.cpp)

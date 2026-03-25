@@ -151,6 +151,7 @@ Result run_simulation(const Config& cfg) {
   out.altitude_m.reserve(n);
   out.dynamic_pressure_pa.reserve(n);
   out.stage_index.reserve(n);
+  out.phase_index.reserve(n);
 
   double mass0 = cfg.payload_mass_kg;
   for (const auto& s : cfg.stages) {
@@ -164,6 +165,9 @@ Result run_simulation(const Config& cfg) {
   bool staging = false;
   double staging_t = 0.0;
   double drop_mass = 0.0;
+  FlightPhase phase = FlightPhase::IGNITION;
+  double prev_vertical_speed = 0.0;
+  bool have_prev_vertical_speed = false;
 
   for (int i = 0; i < n; ++i) {
     const double t = i * cfg.dt_s;
@@ -172,12 +176,16 @@ Result run_simulation(const Config& cfg) {
     const Vec3 rel_v = sub(state.velocity_m_s, cfg.wind_i_m_s);
     const double speed = norm(rel_v);
     const double q = 0.5 * air_density(alt) * speed * speed;
+    const Vec3 radial_hat = scale(state.position_m, 1.0 / std::max(r, 1.0));
+    const double vertical_speed = state.velocity_m_s.x * radial_hat.x + state.velocity_m_s.y * radial_hat.y +
+                                  state.velocity_m_s.z * radial_hat.z;
 
     out.time_s.push_back(t);
     out.states.push_back(state);
     out.altitude_m.push_back(alt);
     out.dynamic_pressure_pa.push_back(q);
     out.stage_index.push_back(stage_idx);
+    out.phase_index.push_back(static_cast<int>(phase));
 
     if (i == n - 1) {
       break;
@@ -197,6 +205,10 @@ Result run_simulation(const Config& cfg) {
       stage_prop = std::max(0.0, stage_prop - mdot * cfg.dt_s);
       stage_t += cfg.dt_s;
       if (stage_prop <= 0.0 || stage_t >= stage->burn_time_s) {
+        if (out.meco_time_s < 0.0) {
+          out.meco_time_s = t;
+        }
+        phase = FlightPhase::STAGING;
         staging = true;
         staging_t = 0.0;
         drop_mass = stage->dry_mass_kg;
@@ -207,15 +219,44 @@ Result run_simulation(const Config& cfg) {
         next.mass_kg -= drop_mass;
         stage_idx += 1;
         staging = false;
+        if (out.staging_time_s < 0.0) {
+          out.staging_time_s = t;
+        }
         if (stage_idx < static_cast<int>(cfg.stages.size())) {
           stage_prop = cfg.stages[stage_idx].propellant_mass_kg;
           stage_t = 0.0;
+          phase = FlightPhase::ASCENT;
+        } else {
+          phase = FlightPhase::COAST;
         }
+      }
+    }
+
+    if (phase == FlightPhase::IGNITION && t >= 2.0) {
+      phase = FlightPhase::ASCENT;
+    }
+    if (have_prev_vertical_speed && (phase == FlightPhase::ASCENT || phase == FlightPhase::COAST) &&
+        prev_vertical_speed > 0.0 && vertical_speed <= 0.0) {
+      phase = FlightPhase::APOGEE;
+      if (out.apogee_event_time_s < 0.0) {
+        out.apogee_event_time_s = t;
+      }
+    } else if (phase == FlightPhase::APOGEE) {
+      phase = FlightPhase::REENTRY;
+      if (out.reentry_time_s < 0.0) {
+        out.reentry_time_s = t;
+      }
+    } else if (phase == FlightPhase::REENTRY && alt <= 50.0) {
+      phase = FlightPhase::LANDING;
+      if (out.landing_time_s < 0.0) {
+        out.landing_time_s = t;
       }
     }
 
     next.mass_kg = std::max(next.mass_kg, cfg.payload_mass_kg);
     state = next;
+    prev_vertical_speed = vertical_speed;
+    have_prev_vertical_speed = true;
   }
 
   const auto apogee_it = std::max_element(out.altitude_m.begin(), out.altitude_m.end());
@@ -226,6 +267,23 @@ Result run_simulation(const Config& cfg) {
   out.apogee_time_s = out.time_s[apogee_idx];
   out.max_q_pa = *maxq_it;
   out.max_q_time_s = out.time_s[maxq_idx];
+
+  double maxq_ascent_80 = -1.0;
+  double maxq_ascent_80_t = 0.0;
+  for (std::size_t i = 0; i < out.time_s.size(); ++i) {
+    if (out.altitude_m[i] <= 80000.0 && out.time_s[i] <= out.apogee_time_s) {
+      if (out.dynamic_pressure_pa[i] > maxq_ascent_80) {
+        maxq_ascent_80 = out.dynamic_pressure_pa[i];
+        maxq_ascent_80_t = out.time_s[i];
+      }
+    }
+  }
+  if (maxq_ascent_80 < 0.0) {
+    maxq_ascent_80 = out.max_q_pa;
+    maxq_ascent_80_t = out.max_q_time_s;
+  }
+  out.max_q_ascent_80km_pa = maxq_ascent_80;
+  out.max_q_ascent_80km_time_s = maxq_ascent_80_t;
 
   return out;
 }

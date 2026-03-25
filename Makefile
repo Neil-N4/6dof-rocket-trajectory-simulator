@@ -1,4 +1,4 @@
-.PHONY: install run run-high-wind test validate montecarlo cpp-build cpp-run
+.PHONY: install run run-high-wind test validate montecarlo cpp-build cpp-run cpp-validate
 
 install:
 	python3 -m venv .venv
@@ -24,3 +24,7 @@ cpp-build:
 
 cpp-run: cpp-build
 	./cpp_sim --dt 0.1 --duration 400 --out outputs/cpp_flight_states.csv
+
+cpp-validate: cpp-build
+	clang++ -std=c++17 -Icpp/include cpp/src/rocket_sim_cpp.cpp cpp/src/validate_main.cpp -o cpp_validate
+	./cpp_validate

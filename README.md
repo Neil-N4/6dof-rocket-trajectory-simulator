@@ -129,6 +129,15 @@ make cpp-run
 
 This produces `outputs/cpp_flight_states.csv` from the native C++ simulator executable (`cpp_sim`).
 
+## C++ Validation Gate
+
+```bash
+cd /path/to/6dof-rocket-trajectory-simulator
+make cpp-validate
+```
+
+`cpp_validate` executes threshold checks and event/phase ordering directly in C++.
+
 ## Validation Methodology
 
 Validation components:
@@ -164,6 +173,7 @@ Monte Carlo dispersion (`python scripts/monte_carlo.py --runs 80 --seed 123 --du
 - `cpp/include/rocket_sim_cpp.hpp`: C++ core data model + public simulation API
 - `cpp/src/rocket_sim_cpp.cpp`: native C++ RK4 dynamics/staging implementation
 - `cpp/src/sim_main.cpp`: C++ CLI simulator entrypoint
+- `cpp/src/validate_main.cpp`: native C++ validation gate executable
 - `scripts/validate.py`: threshold gate for regression prevention
 - `scripts/monte_carlo.py`: uncertainty dispersion runner
 - `configs/*.yaml`: scenario configuration files
