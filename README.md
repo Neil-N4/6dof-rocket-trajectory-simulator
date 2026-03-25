@@ -39,7 +39,7 @@ Mass flow:
 ## Quickstart
 
 ```bash
-cd /Users/neilnair/Documents/Playground/spacex_6dof_sim
+cd /path/to/6dof-rocket-trajectory-simulator
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
@@ -49,7 +49,7 @@ python main.py --dt 0.1 --duration 520
 ## Test
 
 ```bash
-cd /Users/neilnair/Documents/Playground/spacex_6dof_sim
+cd /path/to/6dof-rocket-trajectory-simulator
 source .venv/bin/activate
 PYTHONPATH=. pytest -q
 ```
