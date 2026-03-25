@@ -24,7 +24,7 @@ C++, Python, NumPy, SciPy, Matplotlib
 Translational dynamics:
 
 - $\dot{\mathbf{r}} = \mathbf{v}$
-- $\dot{\mathbf{v}} = \mathbf{g}(\mathbf{r}) + \frac{\mathbf{F}_{\text{thrust}} + \mathbf{F}_{\text{drag}}}{m}$
+- $\dot{\mathbf{v}} = \mathbf{g}(\mathbf{r}) + \frac{\mathbf{F}_{T} + \mathbf{F}_{D}}{m}$
 - $\mathbf{g}(\mathbf{r}) = -\mu \frac{\mathbf{r}}{\|\mathbf{r}\|^3}$
 
 Drag model:
