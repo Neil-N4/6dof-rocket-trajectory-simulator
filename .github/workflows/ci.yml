@@ -1,0 +1,31 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test-and-validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Unit tests
+        run: PYTHONPATH=. pytest -q tests/test_sim.py
+
+      - name: Validation gate
+        run: PYTHONPATH=. python scripts/validate.py --config configs/nominal.yaml --fail-fast
+
+      - name: Monte Carlo smoke
+        run: PYTHONPATH=. python scripts/monte_carlo.py --config configs/nominal.yaml --runs 50 --seed 123 --outdir outputs/ci_monte_carlo

@@ -85,7 +85,8 @@ def derivatives(
     altitude = max(radius - config.earth_radius_m, 0.0)
 
     rho = air_density_kg_m3(altitude)
-    speed = np.linalg.norm(vel)
+    rel_vel = vel - config.wind_i_m_s
+    speed = np.linalg.norm(rel_vel)
 
     thrust_n = 0.0
     mdot = 0.0
@@ -133,7 +134,7 @@ def derivatives(
     drag_i = np.zeros(3)
     if speed > 1e-5:
         drag_mag = 0.5 * rho * speed * speed * cd * area
-        drag_i = -drag_mag * vel / speed
+        drag_i = -drag_mag * rel_vel / speed
 
     grav_a = gravity_accel(pos, config.earth_mu_m3_s2)
     accel_i = grav_a + (thrust_i + drag_i) / mass

@@ -38,6 +38,7 @@ class RocketConfig:
     pid_kp: float = 10.0
     pid_ki: float = 0.2
     pid_kd: float = 3.5
+    wind_i_m_s: np.ndarray = field(default_factory=lambda: np.zeros(3))
 
 
 class FlightPhase(IntEnum):

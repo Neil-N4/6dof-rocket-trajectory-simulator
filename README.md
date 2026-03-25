@@ -28,6 +28,10 @@ C++, Python, NumPy, SciPy, Matplotlib
 
 ![Timeseries](docs/images/timeseries.png)
 
+**Monte Carlo Dispersion (Apogee / Max-Q)**
+
+![Dispersion histograms](docs/images/dispersion_histograms.png)
+
 ## Architecture
 
 ```mermaid
@@ -82,6 +86,30 @@ pip install -r requirements.txt
 MPLCONFIGDIR=$PWD/.mplconfig PYTHONPATH=. python main.py --dt 0.1 --duration 2200
 ```
 
+## Scenario Configs
+
+Run deterministic scenarios without code changes:
+
+- `configs/nominal.yaml`
+- `configs/high_wind.yaml`
+- `configs/thrust_loss.yaml`
+- `configs/heavy_payload.yaml`
+
+Example:
+
+```bash
+MPLCONFIGDIR=$PWD/.mplconfig PYTHONPATH=. python main.py --config configs/high_wind.yaml --seed 42
+```
+
+## Reproducible Commands
+
+```bash
+make test
+make validate
+make run
+make montecarlo
+```
+
 ## Optional C++ Baseline Build
 
 ```bash
@@ -98,6 +126,7 @@ Validation components:
 - Analytical baseline: closed-form vertical-burn reference
 - Numerical cross-check: SciPy `solve_ivp` against RK4 implementation
 - Automated tests: atmosphere behavior, staging transitions, state-machine behavior, and error-threshold checks
+- CI gate: `.github/workflows/ci.yml` runs tests, validation, and Monte Carlo smoke checks on every push/PR
 
 Reference run (`python main.py --dt 0.1 --duration 2200`):
 
@@ -106,6 +135,11 @@ Reference run (`python main.py --dt 0.1 --duration 2200`):
 - Steady-state attitude error (`t > 40 s`): `0.12 deg`
 - RK4 trajectory error vs analytical baseline: `0.000%` (SciPy cross-check: `0.000%`)
 - Detected events: `MECO`, `staging`, `apogee`, `reentry`
+
+Monte Carlo dispersion (`python scripts/monte_carlo.py --runs 80 --seed 123 --duration 1200 --dt 0.15`):
+
+- Apogee P50/P95: `2851.68 / 3286.77 km`
+- Max-Q P50/P95: `36.47 / 39.02 kPa`
 
 ## Repository Structure
 
@@ -117,6 +151,9 @@ Reference run (`python main.py --dt 0.1 --duration 2200`):
 - `rocket_sim/validation.py`: analytical/SciPy validation helpers
 - `rocket_sim/plotting.py`: plot and CSV generation
 - `cpp/rk4_reference.cpp`: optional C++ RK4 reference executable
+- `scripts/validate.py`: threshold gate for regression prevention
+- `scripts/monte_carlo.py`: uncertainty dispersion runner
+- `configs/*.yaml`: scenario configuration files
 - `tests/test_sim.py`: regression and validation tests
 
 ## Tests

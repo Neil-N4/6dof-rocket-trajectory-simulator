@@ -1,0 +1,9 @@
+payload_mass_kg: 15600
+dt_s: 0.1
+sim_duration_s: 2200
+staging_delay_s: 2.0
+pid_kp: 10.0
+pid_ki: 0.2
+pid_kd: 3.5
+wind_i_m_s: [0.0, 65.0, 0.0]
+thrust_curve_csv: data/thrust_curve.csv
