@@ -1,4 +1,4 @@
-.PHONY: install run run-high-wind test validate montecarlo cpp-build cpp-run cpp-validate cpp-test parity cpp-montecarlo benchmark failure-suite cpp-event cpp-simd ekf-demo
+.PHONY: install run run-high-wind test validate montecarlo cpp-build cpp-run cpp-validate cpp-test parity cpp-montecarlo benchmark failure-suite cpp-event cpp-simd ekf-demo perf-artifacts
 
 install:
 	python3 -m venv .venv
@@ -54,3 +54,6 @@ cpp-simd:
 
 ekf-demo:
 	. .venv/bin/activate && PYTHONPATH=. python scripts/run_ekf_demo.py --config configs/nominal.yaml --duration 240
+
+perf-artifacts:
+	. .venv/bin/activate && MPLCONFIGDIR=$$PWD/.mplconfig PYTHONPATH=. python scripts/generate_perf_artifacts.py --build-dir build --outdir outputs/nextgen

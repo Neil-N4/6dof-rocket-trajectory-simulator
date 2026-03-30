@@ -35,8 +35,27 @@ endif()
 add_executable(rk4_reference cpp/rk4_reference.cpp)
 
 if(BUILD_PYTHON_BINDINGS)
+  if(DEFINED ENV{VIRTUAL_ENV} AND EXISTS "$ENV{VIRTUAL_ENV}/bin/python")
+    set(Python3_EXECUTABLE "$ENV{VIRTUAL_ENV}/bin/python")
+  endif()
   find_package(pybind11 CONFIG QUIET)
+  if(NOT pybind11_FOUND)
+    find_package(Python3 COMPONENTS Interpreter QUIET)
+    if(Python3_Interpreter_FOUND)
+      execute_process(
+        COMMAND "${Python3_EXECUTABLE}" -m pybind11 --cmakedir
+        OUTPUT_VARIABLE PYBIND11_CMAKE_DIR
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+        ERROR_QUIET
+      )
+      if(PYBIND11_CMAKE_DIR)
+        list(APPEND CMAKE_PREFIX_PATH "${PYBIND11_CMAKE_DIR}")
+        find_package(pybind11 CONFIG QUIET)
+      endif()
+    endif()
+  endif()
   if(pybind11_FOUND)
+    find_package(Python3 COMPONENTS Interpreter Development.Module REQUIRED)
     pybind11_add_module(rocket_sim_event_bindings cpp/src/pybind_module.cpp)
     target_link_libraries(rocket_sim_event_bindings PRIVATE rocket_sim_cpp_lib)
   else()

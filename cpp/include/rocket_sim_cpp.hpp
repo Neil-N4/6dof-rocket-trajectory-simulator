@@ -91,6 +91,8 @@ struct EventEngineStats {
   std::size_t pushed = 0;
   std::size_t popped = 0;
   std::size_t dropped = 0;
+  double mean_latency_s = 0.0;
+  double max_latency_s = 0.0;
 };
 
 struct EventEngineResult {

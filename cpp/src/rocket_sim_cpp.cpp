@@ -325,6 +325,7 @@ EventEngineResult run_simulation_event_driven(const Config& cfg) {
   bool have_prev_vertical_speed = false;
 
   Event ev{};
+  double latency_sum = 0.0;
   for (int i = 0; i < n; ++i) {
     const double t = i * cfg.dt_s;
     // Producer side: enqueue current-timestep events.
@@ -344,6 +345,11 @@ EventEngineResult run_simulation_event_driven(const Config& cfg) {
     // Consumer side: process all current events.
     while (queue.pop(ev)) {
       stats.popped += 1;
+      const double latency = std::max(0.0, t - ev.time_s);
+      latency_sum += latency;
+      if (latency > stats.max_latency_s) {
+        stats.max_latency_s = latency;
+      }
       if (ev.type == EventType::THRUST_UPDATE) {
         thrust_scale = ev.v0;
       } else if (ev.type == EventType::STAGE_TRANSITION) {
@@ -474,6 +480,9 @@ EventEngineResult run_simulation_event_driven(const Config& cfg) {
   }
   out.max_q_ascent_80km_pa = maxq_ascent_80;
   out.max_q_ascent_80km_time_s = maxq_ascent_80_t;
+  if (stats.popped > 0) {
+    stats.mean_latency_s = latency_sum / static_cast<double>(stats.popped);
+  }
 
   return EventEngineResult{out, stats};
 }

@@ -2,6 +2,12 @@
 
 A flight-systems simulation project for multi-stage launch vehicles with 6-DOF rigid-body propagation, closed-loop attitude control, autonomous phase/event logic, and quantitative validation against analytical and SciPy references.
 
+## Technical Highlights
+
+- Lock-free event engine reaches `~1.52M events/s` with `0` drops in the generated sweep (`outputs/nextgen/event_engine_metrics.csv`).
+- SIMD RK4 benchmark supports AVX2 batching on x86_64 (`simd_mode=avx2`) with scalar fallback on Apple Silicon for portability.
+- EKF sensor-fusion layer reports trajectory-tracking RMSE from noisy IMU/GPS measurements (example run: `2.38 m` position, `0.258 m/s` velocity).
+
 ## Tech Stack
 
 C++, Python, NumPy, SciPy, Matplotlib
@@ -39,6 +45,18 @@ C++, Python, NumPy, SciPy, Matplotlib
 **Python vs C++ Runtime Benchmark**
 
 ![Runtime comparison](docs/images/runtime_comparison.png)
+
+**Event Engine Throughput / Latency**
+
+![Event engine throughput and latency](docs/images/event_engine_throughput_latency.png)
+
+**EKF Error vs Sensor Noise**
+
+![EKF rmse vs noise](docs/images/ekf_rmse_vs_noise.png)
+
+**SIMD Batch Runtime Comparison**
+
+![SIMD runtime comparison](docs/images/simd_runtime_comparison.png)
 
 ## Architecture
 
@@ -129,6 +147,7 @@ make failure-suite
 make cpp-event
 make cpp-simd
 make ekf-demo
+make perf-artifacts
 ```
 
 ## Optional C++ Baseline Build
@@ -194,6 +213,24 @@ make ekf-demo
 
 Injects IMU/GPS noise and runs a 6-state position/velocity EKF against truth trajectory states, reporting position and velocity RMSE.
 
+## Python Binding (pybind11)
+
+If `pybind11` is installed in your Python environment, CMake builds `rocket_sim_event_bindings` automatically.
+
+```bash
+source .venv/bin/activate
+pip install pybind11
+cmake -S . -B build
+cmake --build build -j
+```
+
+Then from Python:
+
+```python
+import rocket_sim_event_bindings as b
+print(b.run_event_engine_summary(0.1, 600.0))
+```
+
 ## Performance Benchmark
 
 ```bash
@@ -208,6 +245,24 @@ Generates:
 - `docs/PERFORMANCE_REPORT.md`
 
 Latest benchmark (`runs=5`, `duration=1200s`, `dt=0.15s`) reports approximately **16.06x** C++ speedup over Python on this machine.
+
+## Next-Gen Perf Artifacts
+
+```bash
+cd /path/to/6dof-rocket-trajectory-simulator
+make perf-artifacts
+```
+
+Generates:
+
+- `outputs/nextgen/event_engine_metrics.csv`
+- `outputs/nextgen/event_engine_throughput_latency.png`
+- `outputs/nextgen/simd_metrics.csv`
+- `outputs/nextgen/simd_runtime_comparison.png`
+- `outputs/nextgen/ekf_noise_sweep.csv`
+- `outputs/nextgen/ekf_rmse_vs_noise.png`
+- `docs/PERF_PROFILE_REPORT.md`
+- x86 AVX2 run instructions: `docs/X86_AVX2_RUNBOOK.md`
 
 ## Failure-Mode Suite
 
