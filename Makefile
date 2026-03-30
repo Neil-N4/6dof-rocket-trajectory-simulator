@@ -1,4 +1,4 @@
-.PHONY: install run run-high-wind test validate montecarlo cpp-build cpp-run cpp-validate cpp-test parity cpp-montecarlo benchmark failure-suite
+.PHONY: install run run-high-wind test validate montecarlo cpp-build cpp-run cpp-validate cpp-test parity cpp-montecarlo benchmark failure-suite cpp-event cpp-simd ekf-demo
 
 install:
 	python3 -m venv .venv
@@ -11,7 +11,7 @@ run-high-wind:
 	. .venv/bin/activate && MPLCONFIGDIR=$$PWD/.mplconfig PYTHONPATH=. python main.py --config configs/high_wind.yaml --seed 42
 
 test:
-	. .venv/bin/activate && PYTHONPATH=. pytest -q tests/test_sim.py tests/test_config.py
+	. .venv/bin/activate && PYTHONPATH=. pytest -q tests/test_sim.py tests/test_config.py tests/test_ekf.py
 
 validate:
 	. .venv/bin/activate && PYTHONPATH=. python scripts/validate.py --config configs/nominal.yaml
@@ -45,3 +45,12 @@ benchmark: cpp-build
 
 failure-suite: cpp-build
 	. .venv/bin/activate && PYTHONPATH=. python scripts/failure_modes.py
+
+cpp-event:
+	cmake -S . -B build && cmake --build build -j && ./build/cpp_event_engine --config configs/nominal.yaml
+
+cpp-simd:
+	cmake -S . -B build && cmake --build build -j && ./build/cpp_simd_batch_rk4 --trajectories 16384 --steps 500
+
+ekf-demo:
+	. .venv/bin/activate && PYTHONPATH=. python scripts/run_ekf_demo.py --config configs/nominal.yaml --duration 240

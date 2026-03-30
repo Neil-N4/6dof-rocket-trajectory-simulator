@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstddef>
 #include <string>
 #include <vector>
 
@@ -72,9 +73,35 @@ struct Result {
   double landing_time_s = -1.0;
 };
 
+enum class EventType {
+  THRUST_UPDATE = 0,
+  STAGE_TRANSITION = 1,
+  SENSOR_READ = 2,
+};
+
+struct Event {
+  EventType type;
+  double time_s;
+  double v0;
+  double v1;
+  double v2;
+};
+
+struct EventEngineStats {
+  std::size_t pushed = 0;
+  std::size_t popped = 0;
+  std::size_t dropped = 0;
+};
+
+struct EventEngineResult {
+  Result sim;
+  EventEngineStats stats;
+};
+
 Config default_config();
 bool load_config_yaml(const std::string& path, Config& cfg, std::string& err);
 Result run_simulation(const Config& cfg);
+EventEngineResult run_simulation_event_driven(const Config& cfg);
 void write_csv(const Result& result, const std::string& out_path);
 
 }  // namespace rocketsim

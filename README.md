@@ -18,6 +18,9 @@ C++, Python, NumPy, SciPy, Matplotlib
 - Autonomous detection of `MECO`, `staging`, `apogee`, `reentry`, and `landing`
 - Analytical baseline checks + SciPy cross-check pipeline
 - Native C++ simulation core (`cpp/include/rocket_sim_cpp.hpp`, `cpp/src/rocket_sim_cpp.cpp`) with RK4, staging, atmosphere, and CSV output
+- Lock-free C++ event engine (`cpp_event_engine`) using a single-producer/single-consumer ring buffer
+- SIMD-vectorized RK4 batch benchmark (`cpp_simd_batch_rk4`) with AVX2 lane batching
+- EKF state-estimation layer (`rocket_sim/estimation.py`) with noisy IMU/GPS measurement fusion
 
 ## Demo Artifacts
 
@@ -78,7 +81,7 @@ Drag and mass flow:
 - Simplified aerodynamic drag (lumped $C_dA$ model)
 - Rigid-body approximation; no structural flex/slosh coupling
 - TVC modeled with bounded gimbal commands
-- No sensor noise, actuator lag, or onboard estimator model
+- Sensor noise + EKF state-estimation demo is included, but this is not yet a full flight-computer estimator stack
 - No aero-heating, plume interaction, or high-fidelity CFD coupling
 
 ## Quickstart (Python)
@@ -123,6 +126,9 @@ make montecarlo
 make cpp-montecarlo
 make benchmark
 make failure-suite
+make cpp-event
+make cpp-simd
+make ekf-demo
 ```
 
 ## Optional C++ Baseline Build
@@ -160,6 +166,33 @@ make parity
 ```
 
 This compares Python and native C++ outputs on the same scenario and enforces metric tolerances for apogee, Max-Q, and key event times.
+
+## Lock-Free Event Engine
+
+```bash
+cd /path/to/6dof-rocket-trajectory-simulator
+make cpp-event
+```
+
+Runs an event-driven C++ simulation loop where thrust updates, stage transitions, and sensor reads are processed via a lock-free SPSC ring buffer and exports queue stats (`pushed/popped/dropped`).
+
+## SIMD Batch RK4 Benchmark
+
+```bash
+cd /path/to/6dof-rocket-trajectory-simulator
+make cpp-simd
+```
+
+Benchmarks scalar RK4 vs AVX2-batched RK4 propagation across large trajectory batches and reports runtime speedup plus batch/scalar parity error.
+
+## EKF Sensor Fusion Demo
+
+```bash
+cd /path/to/6dof-rocket-trajectory-simulator
+make ekf-demo
+```
+
+Injects IMU/GPS noise and runs a 6-state position/velocity EKF against truth trajectory states, reporting position and velocity RMSE.
 
 ## Performance Benchmark
 
