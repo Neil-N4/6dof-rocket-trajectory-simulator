@@ -1,0 +1,67 @@
+name: x86 AVX2 Benchmark
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "cpp/**"
+      - "rocket_sim/**"
+      - "scripts/generate_perf_artifacts.py"
+      - "CMakeLists.txt"
+      - "requirements.txt"
+      - ".github/workflows/x86_avx2_benchmark.yml"
+
+jobs:
+  benchmark:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Configure + Build
+        run: |
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+          cmake --build build -j
+
+      - name: Run x86 perf artifacts
+        run: |
+          MPLCONFIGDIR=$PWD/.mplconfig PYTHONPATH=. python scripts/generate_perf_artifacts.py --build-dir build --outdir outputs/nextgen
+
+      - name: Summarize key metrics
+        run: |
+          echo "### x86 Benchmark Summary" >> $GITHUB_STEP_SUMMARY
+          python - <<'PY' >> $GITHUB_STEP_SUMMARY
+          import csv
+          from pathlib import Path
+
+          ev = list(csv.DictReader(Path("outputs/nextgen/event_engine_metrics.csv").open()))
+          best = max(ev, key=lambda r: float(r["throughput_events_per_s"]))
+          simd = next(csv.DictReader(Path("outputs/nextgen/simd_metrics.csv").open()))
+          print(f"- Event throughput peak: **{float(best['throughput_events_per_s']):,.0f} events/s**")
+          print(f"- Event mean latency at peak: **{float(best['mean_latency_ms']):.4f} ms**")
+          print(f"- SIMD mode: **{simd['simd_mode']}**")
+          print(f"- SIMD speedup: **{float(simd['speedup_x']):.3f}x**")
+          PY
+
+      - name: Upload benchmark artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: x86-avx2-benchmark-artifacts
+          path: |
+            outputs/nextgen/**
+            docs/PERF_PROFILE_REPORT.md
+            docs/images/event_engine_throughput_latency.png
+            docs/images/ekf_rmse_vs_noise.png
+            docs/images/simd_runtime_comparison.png
+

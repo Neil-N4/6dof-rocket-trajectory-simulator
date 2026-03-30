@@ -22,7 +22,7 @@ jobs:
           pip install -r requirements.txt
 
       - name: Unit tests
-        run: PYTHONPATH=. pytest -q tests/test_sim.py tests/test_config.py
+        run: PYTHONPATH=. pytest -q tests/test_sim.py tests/test_config.py tests/test_ekf.py
 
       - name: Validation gate
         run: PYTHONPATH=. python scripts/validate.py --config configs/nominal.yaml --fail-fast
