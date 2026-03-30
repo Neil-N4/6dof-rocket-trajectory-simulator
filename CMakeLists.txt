@@ -10,6 +10,7 @@ add_library(rocket_sim_cpp_lib
     cpp/src/config_loader.cpp
 )
 target_include_directories(rocket_sim_cpp_lib PUBLIC cpp/include)
+set_target_properties(rocket_sim_cpp_lib PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
 add_executable(cpp_sim cpp/src/sim_main.cpp)
 target_link_libraries(cpp_sim PRIVATE rocket_sim_cpp_lib)
