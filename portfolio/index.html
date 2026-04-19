@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Neil Nair | Systems Portfolio</title>
+  <meta
+    name="description"
+    content="C++ systems engineer portfolio focused on simulation, distributed infrastructure, and performance-critical software."
+  />
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <header class="hero">
+    <div class="wrap">
+      <p class="eyebrow">Fall 2026 SWE Portfolio</p>
+      <h1>Neil Nair</h1>
+      <p class="subtitle">
+        C++ systems engineer focused on simulation, distributed infrastructure,
+        and performance-critical software.
+      </p>
+      <nav class="links">
+        <a href="mailto:neilnair4@gmail.com">Email</a>
+        <a href="https://github.com/Neil-N4" target="_blank" rel="noreferrer">GitHub</a>
+        <a href="https://linkedin.com/in/neil-nair" target="_blank" rel="noreferrer">LinkedIn</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section class="section">
+      <h2>Featured Projects</h2>
+      <div class="cards">
+        <article class="card">
+          <h3>Multi-Stage Rocket Dynamics Simulator</h3>
+          <p>
+            C++/Python flight-systems simulator with RK4 propagation, PID+TVC
+            control, staging logic, and validation gates.
+          </p>
+          <ul>
+            <li>&lt;0.001% trajectory error vs baseline</li>
+            <li>Max-Q: 36.32 kPa</li>
+            <li>0.12° steady-state attitude error</li>
+          </ul>
+          <div class="card-links">
+            <a href="https://github.com/Neil-N4/6dof-rocket-trajectory-simulator" target="_blank" rel="noreferrer">View Repo</a>
+            <a href="#rocket">Deep Dive</a>
+          </div>
+        </article>
+
+        <article class="card">
+          <h3>CUDA-Accelerated Path Simulation</h3>
+          <p>
+            GPU Monte Carlo engine optimized for memory access and occupancy
+            using Nsight-driven tuning.
+          </p>
+          <ul>
+            <li>10M+ paths processed</li>
+            <li>50x speedup vs CPU baseline</li>
+            <li>28% lower end-to-end latency</li>
+          </ul>
+          <div class="card-links">
+            <a href="#cuda">Deep Dive</a>
+          </div>
+        </article>
+
+        <article class="card">
+          <h3>Distributed Analytics &amp; Messaging Systems</h3>
+          <p>
+            Production-oriented backend work across ETL, validation, lock-free
+            pipelines, and reliability debugging.
+          </p>
+          <ul>
+            <li>100K+ records processed</li>
+            <li>60% analytical join latency reduction</li>
+            <li>35% messaging defect reduction</li>
+          </ul>
+          <div class="card-links">
+            <a href="#distributed">Deep Dive</a>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section id="rocket" class="section">
+      <h2>Multi-Stage Rocket Dynamics Simulator</h2>
+      <p class="lede">
+        Built a multi-stage launch simulator to model ascent through reentry
+        with deterministic integration and explicit event transitions.
+      </p>
+      <div class="image-grid">
+        <img src="./assets/trajectory_3d.png" alt="3D rocket trajectory plot" />
+        <img src="./assets/timeseries.png" alt="Rocket altitude and velocity timeseries" />
+      </div>
+      <ul class="detail-list">
+        <li>Implemented 6-DOF dynamics with RK4 integration and atmosphere/drag modeling.</li>
+        <li>Added PID-based TVC attitude control with gimbal limits.</li>
+        <li>Built a 7-state flight-phase engine with automatic MECO, staging, apogee, reentry, and landing detection.</li>
+        <li>Added Python↔C++ parity checks, validation tests, and CI gates.</li>
+      </ul>
+      <div class="stats">
+        <div><span>Trajectory Error</span><strong>&lt;0.001%</strong></div>
+        <div><span>Max-Q</span><strong>36.32 kPa</strong></div>
+        <div><span>Tracking Error</span><strong>0.12°</strong></div>
+      </div>
+    </section>
+
+    <section id="cuda" class="section">
+      <h2>CUDA-Accelerated Path Simulation</h2>
+      <p class="lede">
+        Built a high-throughput simulation engine in C++/CUDA to remove CPU bottlenecks
+        in large Monte Carlo workloads.
+      </p>
+      <div class="image-grid single">
+        <img src="./assets/runtime_comparison.png" alt="Runtime comparison chart between Python and C++" />
+      </div>
+      <ul class="detail-list">
+        <li>Engineered CUDA kernels with shared-memory tiling and coalesced memory access.</li>
+        <li>Tuned occupancy and kernel launch parameters using Nsight Systems.</li>
+        <li>Moved RNG generation on-device to remove host-device transfer bottlenecks.</li>
+        <li>Used CUDA streams to overlap compute and asynchronous transfers.</li>
+      </ul>
+      <div class="stats">
+        <div><span>Paths</span><strong>10M+</strong></div>
+        <div><span>Runtime Speedup</span><strong>50x</strong></div>
+        <div><span>Latency Reduction</span><strong>28%</strong></div>
+      </div>
+    </section>
+
+    <section id="distributed" class="section">
+      <h2>Distributed Analytics &amp; Messaging Systems</h2>
+      <p class="lede">
+        Designed backend systems for reliability, correctness, and low-latency operation
+        under real workloads.
+      </p>
+      <ul class="detail-list">
+        <li>Built replayable ETL/analytics pipelines with schema validation and rerunnable workflows.</li>
+        <li>Implemented cross-table consistency checks and KPI audits to prevent downstream data errors.</li>
+        <li>Re-architected messaging pipeline with lock-free MPMC ring buffers.</li>
+        <li>Diagnosed P99 saturation and fixed pool-exhaustion behavior with adaptive sizing and instrumentation.</li>
+      </ul>
+      <div class="stats">
+        <div><span>Data Volume</span><strong>100K+</strong></div>
+        <div><span>Join Latency</span><strong>-60%</strong></div>
+        <div><span>Defects</span><strong>-35%</strong></div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="wrap">
+      Built for Fall 2026 SpaceX SWE applications. Focus: correctness, performance, and end-to-end engineering execution.
+    </div>
+  </footer>
+</body>
+</html>
